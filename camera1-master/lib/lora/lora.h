@@ -15,9 +15,14 @@ extern "C" {
 
 enum {
     LORA_ERR,
-
     LORA_OK,
+
+    LORA_RX_EMPTY,
+    LORA_RX_OK,
+    LORA_RX_,
 };
+
+
 
 typedef struct{
     unsigned char len;

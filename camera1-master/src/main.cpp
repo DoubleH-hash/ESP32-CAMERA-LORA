@@ -11,44 +11,52 @@
 
 unsigned char readBuffer[LORA_READ_BUFFER_SIZE];
 
-QueueHandle_t LORA_SendQueue;   //专门用来发送AT命令给LORA的队列
+QueueHandle_t LORA_SendQueue; // 专门用来发送AT命令给LORA的队列
 const int QueueElementSize = 10;
 
-//接收LORA的数据
+// 接收LORA的数据
 void Task_getSerial2(void *pvParameters)
 {
-    (void) pvParameters;
-    unsigned char num = 0, i = 0;
-    while(1){
-        num = Serial2.available();   //收到串口数据
-        if(num != 0 && num < LORA_READ_BUFFER_SIZE){
-            while(i < num){
-                readBuffer[i] = (unsigned char)Serial2.read();
-                i ++;
-            }
+    (void)pvParameters;
+    unsigned char num = 0, lastnum = 0, i = 0;
+    while (1)
+    {
+        num = Serial2.available();
 
+        if (num != 0 && lastnum != num){  // 收到串口数据
+            lastnum = num;
+        }
+        else if (num != 0 && lastnum == num){   //收到的串口数据不变，说明接收完成
+            while (i < num){
+                readBuffer[i] = (unsigned char)Serial2.read();
+                i++;
+            }
             lora_dealSerial(readBuffer, num);
 
-            num = 0;i = 0;
+            num = 0;lastnum = 0;
+            i = 0;
         }
-        delay(1000);  //每秒采集一次串口处的数据
+        delay(100); // 每100ms采集一次串口处的数据
     }
 }
 
 // 向LORA发送数据
 void Task_sendSerial2(void *pvParameters)
 {
-    (void) pvParameters;
+    (void)pvParameters;
     int queue_ret = 0, i = 0;
     Lora_AT_send send;
-    while(1){
-        if(LORA_SendQueue != NULL){
+    while (1)
+    {
+        if (LORA_SendQueue != NULL)
+        {
             queue_ret = xQueueReceive(LORA_SendQueue, &send, portMAX_DELAY);
-            if(queue_ret == pdPASS){   //收到消息队列的数据
-                //输出调试信息
+            if (queue_ret == pdPASS)
+            { // 收到消息队列的数据
+                // 输出调试信息
                 Serial.printf("\r\n[Task LORA AT SEND] send:%s,len:%d,raw:", send.at_data, send.len);
                 Serial.write(send.at_data, send.len);
-                //串口2发送给lora
+                // 串口2发送给lora
                 Serial2.write(send.at_data, send.len);
             }
         }
@@ -63,7 +71,8 @@ void setup()
     Serial2.begin(115200); // 串口2与LORA连接
 
     err = Camera_Init();
-    if(err != ESP_OK){
+    if (err != ESP_OK)
+    {
         Serial.printf("Camera init failed with error 0x%x", err);
     }
 
@@ -71,11 +80,8 @@ void setup()
     xTaskCreate(Task_sendSerial2, "Serial2_send", 1024, NULL, 2, NULL);
 
     LORA_SendQueue = xQueueCreate(QueueElementSize, sizeof(Lora_AT_send));
-
 }
 
 void loop()
 {
-
-
 }
