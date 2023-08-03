@@ -8,6 +8,8 @@
 #include "camera.h"
 #include "led.h"
 
+//需要两个IO，一个作为唤醒IO，一个作为拍照帧同步IO
+//睡眠模式为外部唤醒
 
 void setup()
 {
