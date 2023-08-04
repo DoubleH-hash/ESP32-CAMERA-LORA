@@ -12,7 +12,12 @@
 unsigned char readBuffer[LORA_READ_BUFFER_SIZE];
 
 QueueHandle_t LORA_SendQueue; // 专门用来发送AT命令给LORA的队列
-const int QueueElementSize = 10;
+const int LORA_QueueSize = 10;
+
+QueueHandle_t Camera_ControlQueue; // 专门用来控制相机拍照,传递相机拍照命令
+const int Camera_QueueSize = 10;
+
+//与slave需要   1：唤醒IO(master唤醒后，就要唤醒slave) 2：帧同步IO, 3.数据传输完成状态IO
 
 // 接收LORA的数据
 void Task_getSerial2(void *pvParameters)
@@ -60,6 +65,28 @@ void Task_sendSerial2(void *pvParameters)
                 Serial2.write(send.at_data, send.len);
             }
         }
+        delay(100); //多任务延时
+    }
+}
+
+void Task_Camera(void *pvParameters)
+{
+    camera_fb_t *fb;
+    int queue_ret = 0;
+    int camera_cmd = 0;   // 1:手动触发拍照  2：休眠唤醒后拍照
+    int fb_ret = 0;
+    while(1){
+        if(Camera_ControlQueue != NULL){
+            queue_ret = xQueueReceive(LORA_SendQueue, &camera_cmd, portMAX_DELAY); 
+            if(camera_cmd != 0){
+               fb_ret = Camera_getFrame(fb);
+               if(fb_ret == ESP_OK){
+                    Serial.printf("\r\n[Task_Camera]: get a frame! size:%d,raw data:",fb->len);
+                    Serial.write(fb->buf, fb->len);
+               }
+            }
+        }
+        delay(50); //多任务延时
     }
 }
 
@@ -76,10 +103,14 @@ void setup()
         Serial.printf("Camera init failed with error 0x%x", err);
     }
 
-    xTaskCreate(Task_getSerial2, "Serial2_read", 2048, NULL, 1, NULL);
-    xTaskCreate(Task_sendSerial2, "Serial2_send", 1024, NULL, 2, NULL);
+    xTaskCreate(Task_getSerial2, "Serial2_read", 1024, NULL, 1, NULL);
+    xTaskCreate(Task_sendSerial2, "Serial2_send", 1024, NULL, 3, NULL);
+    xTaskCreate(Task_Camera, "Camera_controler", 1024, NULL, 2, NULL);
 
-    LORA_SendQueue = xQueueCreate(QueueElementSize, sizeof(Lora_AT_send));
+    LORA_SendQueue = xQueueCreate(LORA_QueueSize, sizeof(Lora_AT_send));
+
+    Camera_ControlQueue = xQueueCreate(Camera_QueueSize, sizeof(int));
+
 }
 
 void loop()

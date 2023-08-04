@@ -46,7 +46,6 @@ esp_err_t Camera_Init()
     //修改相机参数寄存器中的值
     s->set_vflip(s, 1);
 
-    
     return err;
 }
 

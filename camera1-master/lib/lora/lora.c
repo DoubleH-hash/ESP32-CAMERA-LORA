@@ -23,7 +23,7 @@ int lora_dealSerial(unsigned char *data, unsigned char len)
     unsigned char ret = LORA_RX_EMPTY;
 
     strx = strstr((const char*)data,(const char*)"OK");//返回OK
-    if(strx != NULL){return LORA_RX_OK;}
+    if(strx != NULL){ret = LORA_RX_OK;}
 
     Clear_Buffer(data, len);
     return ret;
