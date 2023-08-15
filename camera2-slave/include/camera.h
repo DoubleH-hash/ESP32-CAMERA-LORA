@@ -1,9 +1,6 @@
 #ifndef __CAMERA_H_
 #define __CAMERA_H_
 
-#ifdef __cplusplus  //按照类C的编译和连接规约来编译和连接，而不是C++的编译的连接规约。
-extern "C" {
-#endif
 
 #define RESET_GPIO_NUM   5
 #define XCLK_GPIO_NUM    15
@@ -30,14 +27,9 @@ extern "C" {
 
 
 esp_err_t Camera_Init();
-esp_err_t Camera_getFrame(camera_fb_t *fb);
-void Camera_clearFB(camera_fb_t *fb);
 
 
 
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif
 
 
 #endif

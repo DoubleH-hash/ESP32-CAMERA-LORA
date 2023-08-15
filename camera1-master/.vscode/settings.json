@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "freertos.h": "c",
+        "task.h": "c",
+        "arduino.h": "c",
+        "soc_caps.h": "c",
+        "wakeup.h": "c",
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp"
+    }
+}

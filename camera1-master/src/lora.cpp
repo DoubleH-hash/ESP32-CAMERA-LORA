@@ -6,8 +6,11 @@
 #include "soc/soc_caps.h"
 #include "driver/uart.h"
 
-extern QueueHandle_t LORA_SendQueue;
+
+
+//extern QueueHandle_t LORA_SendQueue;
 char *strx;
+
 
 // 清空缓存
 void Clear_Buffer(unsigned char *data, unsigned char len)
@@ -39,7 +42,7 @@ void lora_sendAT(unsigned char *data, unsigned char len)
     {
         send->at_data[i] = data[i];
     }
-    ret = xQueueSend(LORA_SendQueue, (void *)send, 0);
+    //ret = xQueueSend(LORA_SendQueue, send, 0);
 }
 
 int lora_Init()

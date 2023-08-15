@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "esp_camera.h"
 #include "fb_gfx.h"
+#include "common.h"
 
 //初始化相机
 esp_err_t Camera_Init()
@@ -25,19 +26,21 @@ esp_err_t Camera_Init()
     config.pin_sccb_scl = SIOC_GPIO_NUM;
     config.pin_pwdn = -1;
     config.pin_reset = RESET_GPIO_NUM;
+    
     config.xclk_freq_hz = 20000000;
+    config.ledc_timer = LEDC_TIMER_0;
+    config.ledc_channel = LEDC_CHANNEL_0;
 
-    config.frame_size = FRAMESIZE_VGA;
+    config.frame_size = FRAMESIZE_SVGA;
     config.pixel_format = PIXFORMAT_JPEG;
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
     config.fb_location = CAMERA_FB_IN_PSRAM;
-    config.jpeg_quality = 12;
+    config.jpeg_quality = 10;
     config.fb_count = 1;
 
     err = esp_camera_init(&config);
     if (err != ESP_OK)
     {
-        //Serial.printf("Camera init failed with error 0x%x", err);
         return err;
     }
 
@@ -46,24 +49,6 @@ esp_err_t Camera_Init()
     //修改相机参数寄存器中的值
     s->set_vflip(s, 1);
 
+    
     return err;
-}
-
-//获取图片
-esp_err_t Camera_getFrame(camera_fb_t *fb)
-{
-    esp_err_t ret = ESP_OK;
-
-    fb = esp_camera_fb_get();
-
-    if(fb == NULL){
-        ret = ESP_FAIL;
-    }
-    return ret;
-}
-
-//清除framebuffer
-void Camera_clearFB(camera_fb_t *fb)
-{
-    esp_camera_fb_return(fb);
 }
